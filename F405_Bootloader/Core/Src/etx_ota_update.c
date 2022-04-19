@@ -58,7 +58,7 @@ ETX_OTA_EX_ etx_ota_download_and_flash(void) {
 	uint32_t rec_data_crc = 0u;
 	uint16_t data_len;
 
-	printf("Waiting for the OTA data...\r\n");
+//	printf("Waiting for the OTA data...\r\n");
 
 	/* Reset the variables */
 	ota_fw_total_size = 0u;
@@ -79,7 +79,7 @@ ETX_OTA_EX_ etx_ota_download_and_flash(void) {
 
 			if( cal_data_crc != rec_data_crc )
 			{
-			  printf("Chunk's CRC mismatch [Cal CRC = 0x%08lX] [Rec CRC = 0x%08lX]\r\n", cal_data_crc, rec_data_crc );
+//			  printf("Chunk's CRC mismatch [Cal CRC = 0x%08lX] [Rec CRC = 0x%08lX]\r\n", cal_data_crc, rec_data_crc );
 			  ret = ETX_OTA_EX_ERR;
 			} else {
 				ret = etx_process_data(rxBuffer, rxSize);
@@ -87,13 +87,13 @@ ETX_OTA_EX_ etx_ota_download_and_flash(void) {
 
 		} else {
 			//didn't received data. break.
-			printf("Zero Length\r\n");
+//			printf("Zero Length\r\n");
 			ret = ETX_OTA_EX_ERR;
 		}
 
 		//Send ACK or NACK
 		if (ret != ETX_OTA_EX_OK) {
-			printf("Sending NACK\r\n");
+//			printf("Sending NACK\r\n");
 			etx_ota_send_resp(OTA_NACK);
 			break;
 		} else {
@@ -134,7 +134,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len) {
 
 		switch (ota_state) {
 		case ETX_OTA_STATE_IDLE: {
-			printf("ETX_OTA_STATE_IDLE...\r\n");
+//			printf("ETX_OTA_STATE_IDLE...\r\n");
 			ret = ETX_OTA_EX_OK;
 		}
 			break;
@@ -144,7 +144,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len) {
 
 			if (cmd->packet_type == ETX_OTA_PACKET_TYPE_CMD) {
 				if (cmd->cmd == ETX_OTA_CMD_START) {
-					printf("Received OTA START Command\r\n");
+//					printf("Received OTA START Command\r\n");
 					ota_state = ETX_OTA_STATE_HEADER;
 					ret = ETX_OTA_EX_OK;
 				}
@@ -157,7 +157,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len) {
 			if (header->packet_type == ETX_OTA_PACKET_TYPE_HEADER) {
 				ota_fw_total_size = header->meta_data.package_size;
 				ota_fw_crc = header->meta_data.package_crc;
-				printf("Received OTA Header. FW Size = %ld\r\n", ota_fw_total_size);
+//				printf("Received OTA Header. FW Size = %ld\r\n", ota_fw_total_size);
 
 				//get the slot number
 				slot_num_to_write = get_available_slot_number();
@@ -197,9 +197,9 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len) {
 
 				/* write the chunk to the Flash (App location) */
 				ex = write_data_to_slot(slot_num_to_write, buf + 4, data_len-4, is_first_block);
-				printf ("Writing %d bytes to slot %d\r\n", data_len, slot_num_to_write);
+//				printf ("Writing %d bytes to slot %d\r\n", data_len, slot_num_to_write);
 				if (ex == HAL_OK) {
-					printf("[%ld/%ld]\r\n", ota_fw_received_size / OTA_DATA_MAX_SIZE, ota_fw_total_size /OTA_DATA_MAX_SIZE);
+//					printf("[%ld/%ld]\r\n", ota_fw_received_size / OTA_DATA_MAX_SIZE, ota_fw_total_size /OTA_DATA_MAX_SIZE);
 					if (ota_fw_received_size >= ota_fw_total_size) {
 						//received the full data. So, move to end
 						ota_state = ETX_OTA_STATE_END;
@@ -216,9 +216,9 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len) {
 
 			if (cmd->packet_type == ETX_OTA_PACKET_TYPE_CMD) {
 				if (cmd->cmd == ETX_OTA_CMD_END) {
-					printf("Received OTA END Command\r\n");
+//					printf("Received OTA END Command\r\n");
 
-					printf("Validating the received Binary...\r\n");
+//					printf("Validating the received Binary...\r\n");
 
 					uint32_t slot_addr;
 					if (slot_num_to_write == 0u) {
@@ -230,10 +230,10 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len) {
 					//Calculate and verify the CRC
 					uint32_t cal_crc = crc32_bytes(&hcrc, (uint8_t*)slot_addr, ota_fw_total_size);
 					if (cal_crc != ota_fw_crc) {
-						printf("ERROR: FW CRC Mismatch\r\n");
+//						printf("ERROR: FW CRC Mismatch\r\n");
 						break;
 					}
-					printf("Done!!!\r\n");
+//					printf("Done!!!\r\n");
 
 					/* Read the configuration */
 					ETX_GNRL_CFG_ cfg;
@@ -292,19 +292,19 @@ uint16_t etx_receive_chunk(uint16_t size) {
 
 	packetType = (ETX_OTA_PACKET_TYPE_)rxBuffer[1];
 	if (packetType > ETX_OTA_PACKET_TYPE_RESPONSE){
-		puts ("Unknown packet type!\r\n");
+//		puts ("Unknown packet type!\r\n");
 		return 0;
 	}
 	if (size < 10){
 		if (packetType != ETX_OTA_PACKET_TYPE_DATA){
-			puts ("Wrong packet size!\r\n");
+//			puts ("Wrong packet size!\r\n");
 			return 0;
 		}
 	}
 
 	bytesReceived = size;
 
-	printf ("%d bytes received\r\n", bytesReceived);
+//	printf ("%d bytes received\r\n", bytesReceived);
 	return bytesReceived;
 }
 
@@ -357,7 +357,7 @@ static HAL_StatusTypeDef write_data_to_slot(uint8_t slot_num, uint8_t *data, uin
 
 		//No need to erase every time. Erase only the first time.
 		if (is_first_block) {
-			printf("Erasing the Slot %d Flash memory...\r\n", slot_num);
+//			printf("Erasing the Slot %d Flash memory...\r\n", slot_num);
 			//Erase the Flash
 			FLASH_EraseInitTypeDef EraseInitStruct;
 			uint32_t SectorError;
@@ -373,7 +373,7 @@ static HAL_StatusTypeDef write_data_to_slot(uint8_t slot_num, uint8_t *data, uin
 
 			ret = HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
 			if (ret != HAL_OK) {
-				printf("Flash Erase Error\r\n");
+//				printf("Flash Erase Error\r\n");
 				break;
 			}
 		}
@@ -392,7 +392,7 @@ static HAL_StatusTypeDef write_data_to_slot(uint8_t slot_num, uint8_t *data, uin
 				//update the data count
 				ota_fw_received_size += 1;
 			} else {
-				printf("Flash Write Error\r\n");
+//				printf("Flash Write Error\r\n");
 				break;
 			}
 		}
@@ -436,7 +436,7 @@ static uint8_t get_available_slot_number( void )
      if( ( cfg.slot_table[i].is_this_slot_not_valid != 0u ) || ( cfg.slot_table[i].is_this_slot_active == 0u ) )
      {
        slot_number = i;
-       printf("Slot %d is available for OTA update\r\n", slot_number);
+//       printf("Slot %d is available for OTA update\r\n", slot_number);
        break;
      }
    }
@@ -466,7 +466,7 @@ static HAL_StatusTypeDef write_data_to_flash_app(uint8_t *data, uint32_t data_le
 		__HAL_FLASH_CLEAR_FLAG(
 				FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR);
 
-		printf("Erasing the App Flash memory...\r\n");
+//		printf("Erasing the App Flash memory...\r\n");
 		//Erase the Flash
 		FLASH_EraseInitTypeDef EraseInitStruct;
 		uint32_t SectorError;
@@ -478,14 +478,14 @@ static HAL_StatusTypeDef write_data_to_flash_app(uint8_t *data, uint32_t data_le
 
 		ret = HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
 		if (ret != HAL_OK) {
-			printf("Flash erase Error\r\n");
+//			printf("Flash erase Error\r\n");
 			break;
 		}
 
 		for (uint32_t i = 0; i < data_len; i++) {
 			ret = HAL_FLASH_Program( FLASH_TYPEPROGRAM_BYTE, (APP_FLASH_ADDR + i), data[i]);
 			if (ret != HAL_OK) {
-				printf("App Flash Write Error\r\n");
+//				printf("App Flash Write Error\r\n");
 				break;
 			}
 		}
@@ -527,13 +527,13 @@ void load_new_app(void) {
 
 	for (uint8_t i = 0; i < NO_OF_SLOTS; i++) {
 		if (cfg.slot_table[i].should_we_run_this_fw == 1u) {
-			printf("New Application is available in the slot %d!!!\r\n", i);
+//			printf("New Application is available in the slot %d!!!\r\n", i);
 			is_update_available = true;
 			slot_num = i;
 
 			//update the slot
 			cfg.slot_table[i].is_this_slot_active = 1u;
-			printf ("Slot %d active now\r\n", slot_num);
+//			printf ("Slot %d active now\r\n", slot_num);
 			cfg.slot_table[i].should_we_run_this_fw = 0u;
 
 			break;
@@ -559,13 +559,13 @@ void load_new_app(void) {
 		//Load the new app or firmware to app's flash address
 		ret = write_data_to_flash_app((uint8_t*) slot_addr, cfg.slot_table[slot_num].fw_size);
 		if (ret != HAL_OK) {
-			printf("App Flash write Error\r\n");
+//			printf("App Flash write Error\r\n");
 		} else {
 				/* write back the updated config */
-			puts ("Write config to flash\r\n");
+//			puts ("Write config to flash\r\n");
 			ret = write_cfg_to_flash(&cfg);
 			if (ret != HAL_OK) {
-				printf("Config Flash write Error\r\n");
+//				printf("Config Flash write Error\r\n");
 			}
 		}
 	} else {
@@ -579,7 +579,7 @@ void load_new_app(void) {
 	}
 
 	//Verify the application is corrupted or not
-	printf("Verifying the Application...");
+//	printf("Verifying the Application...");
 
 	FLASH_WaitForLastOperation(HAL_MAX_DELAY);
 	//Verify the application
@@ -588,12 +588,12 @@ void load_new_app(void) {
 
 	//Verify the CRC
 	if (cal_data_crc != cfg.slot_table[slot_num].fw_crc) {
-		printf("ERROR!!!\r\n");
-		printf("Invalid Application. HALT!!!\r\n");
+//		printf("ERROR!!!\r\n");
+//		printf("Invalid Application. HALT!!!\r\n");
 		while (1)
 			;
 	}
-	printf("Done!!!\r\n");
+//	printf("Done!!!\r\n");
 }
 
 /**
@@ -641,7 +641,7 @@ static HAL_StatusTypeDef write_cfg_to_flash(ETX_GNRL_CFG_ *cfg) {
 		for (uint32_t i = 0u; i < sizeof(ETX_GNRL_CFG_); i++) {
 			ret = HAL_FLASH_Program( FLASH_TYPEPROGRAM_BYTE, CONFIG_FLASH_ADDR + i, data[i]);
 			if (ret != HAL_OK) {
-				printf("Slot table Flash Write Error\r\n");
+//				printf("Slot table Flash Write Error\r\n");
 				break;
 			}
 		}

@@ -110,9 +110,9 @@ int main(void)
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, rxBuffer, OTA_PACKET_MAX_SIZE);
 	__HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
 
-	printf("Starting Bootloader(%d.%d)\r\n", BL_Version[0], BL_Version[1]);
+//	printf("Starting Bootloader(%d.%d)\r\n", BL_Version[0], BL_Version[1]);
 
-	printf("Reading the reboot reason...\r\n");
+//	printf("Reading the reboot reason...\r\n");
 
 	ETX_GNRL_CFG_ *cfg = (ETX_GNRL_CFG_*) (CONFIG_FLASH_ADDR);
 	bool goto_ota_mode = false;
@@ -123,7 +123,7 @@ int main(void)
 		/*
 		 * It is a normal boot. So, do nothing here.
 		 */
-		printf("Normal Boot\r\n");
+//		printf("Normal Boot\r\n");
 		break;
 	}
 	case OTA_REQUEST:
@@ -133,8 +133,8 @@ int main(void)
 		 * time boot. So, don't wait for the user to press the button.
 		 * Directly go to OTA mode.
 		 */
-		printf("First time boot / OTA Request...\r\n");
-		printf("Going to OTA mode...\r\n");
+//		printf("First time boot / OTA Request...\r\n");
+//		printf("Going to OTA mode...\r\n");
 		goto_ota_mode = true;
 		break;
 	}
@@ -150,7 +150,7 @@ int main(void)
 	GPIO_PinState OTA_Pin_state;
 	uint32_t end_tick = HAL_GetTick() + 1000;   // from now to 3 Seconds
 
-	printf("Check BOOT1 pin to trigger OTA update...\r\n");
+//	printf("Check BOOT1 pin to trigger OTA update...\r\n");
 	do {
 		OTA_Pin_state = HAL_GPIO_ReadPin( BOOT1_GPIO_Port, BOOT1_Pin);
 		uint32_t current_tick = HAL_GetTick();
@@ -165,23 +165,23 @@ int main(void)
 	if ((OTA_Pin_state == GPIO_PIN_SET) || (goto_ota_mode)) {
 		HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
 
-		printf("Starting Firmware Download!!!\r\n");
+//		printf("Starting Firmware Download!!!\r\n");
 		/* OTA Request. Receive the data from the UART4 and flash */
 		if (etx_ota_download_and_flash() != ETX_OTA_EX_OK) {
 			/* Error. Don't process. */
-			printf("OTA Update : ERROR!!! HALT!!!\r\n");
+//			printf("OTA Update : ERROR!!! HALT!!!\r\n");
 			while (1)
 				;
 		} else {
 			/* Reset to load the new application */
-			printf("Firmware update is done!!! Rebooting...\r\n");
+//			printf("Firmware update is done!!! Rebooting...\r\n");
 			HAL_Delay (50);
 			HAL_NVIC_SystemReset();
 		}
 	}
-	puts ("Copy firmware to the Application area\r\n");
+//	puts ("Copy firmware to the Application area\r\n");
 	load_new_app();
-	puts ("Jump to the Application\r\n");
+//	puts ("Jump to the Application\r\n");
 	goto_application();
   /* USER CODE END 2 */
 
